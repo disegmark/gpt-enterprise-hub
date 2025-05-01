@@ -31,7 +31,7 @@ Este repositorio contiene un sistema completo para integrar un **Módulo de Cont
 
 1. Clona el proyecto:
 ```bash
-git clone https://github.com/disegmark/Proyecto-MCP.git
+git clone https://github.com/disegmark/gpt-enterprise-hub
 cd Proyecto-MCP
 
 ## Copia las variables de entorno:
