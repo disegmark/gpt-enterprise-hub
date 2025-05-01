@@ -41,9 +41,6 @@ cp frontend-app/.env.local.example frontend-app/.env.local
 
 ## Levanta todo con Docker:
 
-bash
-Copiar
-Editar
 docker-compose up -d
 
 ## Accede a:
