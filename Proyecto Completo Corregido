@@ -1,0 +1,251 @@
+
+
+---
+
+1. Estructura y convenciones
+
+
+---
+
+2. Backend MCP (Node.js + Express)
+
+Errores / ausencias
+
+1. Falta autenticación: no hay ruta de login ni validación de JWT.
+
+
+2. Inserción sin validación: los POST /ordenes y POST /respuesta-agente no sanitizan ni validan el body.
+
+
+3. Manejo de errores: en los catch se envía 500 genérico sin log.
+
+
+4. Estructura flat: todo en un solo archivo, complica escalabilidad.
+
+
+
+Correcciones
+
+Instalar:
+
+npm install express joi dotenv cors pg bcrypt jsonwebtoken winston
+
+Estructura mínima:
+
+backend-mcp/
+├── src/
+│   ├── controllers/
+│   │   ├── auth.js
+│   │   └── ordenes.js
+│   ├── middlewares/
+│   │   ├── auth.js
+│   │   └── errorHandler.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   └── ordenes.js
+│   └── app.js
+├── Dockerfile
+├── package.json
+└── .env.example
+
+Ejemplo src/controllers/auth.js:
+
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+exports.login = async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    const { rows } = await pool.query('SELECT id, password_hash FROM users WHERE username=$1', [username]);
+    if (!rows.length) return res.status(401).json({ error: 'Usuario no encontrado' });
+    const match = await bcrypt.compare(password, rows[0].password_hash);
+    if (!match) return res.status(401).json({ error: 'Credenciales inválidas' });
+    const token = jwt.sign({ userId: rows[0].id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+Middleware de validación de JWT (src/middlewares/auth.js):
+
+const jwt = require('jsonwebtoken');
+module.exports = (req,res,next) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return res.status(401).end();
+  try {
+    const payload = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
+    req.userId = payload.userId;
+    next();
+  } catch {
+    res.status(401).end();
+  }
+};
+
+Manejo global de errores (src/middlewares/errorHandler.js):
+
+module.exports = (err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+};
+
+Seguridad CORS en app.js:
+
+app.use(cors({ origin: process.env.CORS_ORIGIN.split(',') }));
+
+
+
+---
+
+3. Frontend App (Next.js)
+
+Errores / ausencias
+
+1. Autenticación ausente: no hay llamada a login, ni guardado de token.
+
+
+2. Protección de rutas: /dashboard y /nueva-orden deben verificar JWT.
+
+
+3. Variables de entorno: el ejemplo .env.local falta NEXT_PUBLIC_API_URL.
+
+
+
+Correcciones
+
+Instalar:
+
+npm install axios js-cookie
+
+pages/login.js: guarda token en cookie o localStorage.
+
+pages/_app.js: wrap con Context que verifica y redirige si no hay JWT.
+
+services/api.js:
+
+import axios from 'axios';
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
+api.interceptors.request.use(cfg => {
+  const token = localStorage.getItem('token');
+  if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  return cfg;
+});
+export default api;
+
+Protección de rutas:
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+export const withAuth = (Wrapped) => {
+  return (props) => {
+    const router = useRouter();
+    useEffect(() => {
+      if (!localStorage.getItem('token')) router.replace('/login');
+    }, []);
+    return <Wrapped {...props} />;
+  };
+};
+
+
+
+---
+
+4. Base de datos y PhpMyAdmin
+
+users.sql: Asegúrate de incluir:
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+Volúmenes: En docker-compose.yml apunta phpmyadmin/db al mismo volumen de Postgres o crea uno nuevo con datos persistentes.
+
+
+
+---
+
+5. Docker Compose
+
+Errores detectados
+
+El servicio phpmyadmin no estaba definido: mejor agregar:
+
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  depends_on:
+    - db
+  environment:
+    PMA_HOST: db
+    PMA_USER: ${PHPADMIN_USER}
+    PMA_PASSWORD: ${PHPADMIN_PASS}
+  ports:
+    - "8080:80"
+
+Añadir variables de entorno en environment.
+
+
+
+---
+
+6. Flujo n8n
+
+Verifica que los endpoints en los nodos de Webhook / HTTP Request apunten a las rutas correctas (http://mcp:3001/ordenes, etc.).
+
+Añade un nodo “Error Trigger” para notificar fallos al canal de Slack o correo.
+
+
+
+---
+
+7. Documentación final
+
+README.md: incluye secciones de “Autenticación” y “Variables de entorno” actualizadas.
+
+manual-despliegue.pdf: incorpora los pasos de migración de BDD (psql < database.sql) y generación inicial de usuarios con bcrypt.
+
+
+
+---
+
+📦 Estado Final del Proyecto
+
+gpt-enterprise-hub/
+├── backend-mcp/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   └── app.js
+│   ├── Dockerfile
+│   ├── .env.example
+│   ├── package.json
+│   └── README.md
+├── frontend-app/
+│   ├── components/
+│   ├── contexts/
+│   ├── pages/
+│   ├── services/
+│   ├── .env.local.example
+│   └── README.md
+├── phpmyadmin-db/
+│   ├── users.sql
+│   └── README.md
+├── n8n-flows/
+│   └── mcp-flujo.json
+├── manuals/
+│   ├── manual-despliegue.pdf
+│   └── manual-whatsapp.pdf
+├── docker-compose.yml
+├── .gitignore
+├── README.md
+└── LICENSE
+
+
