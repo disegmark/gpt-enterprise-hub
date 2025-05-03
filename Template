@@ -1,0 +1,66 @@
+# =============================
+# Node.js / Backend MCP
+# =============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*.local
+
+# PM2 process file
+pids/
+*.pid
+*.seed
+
+# Build output
+dist/
+build/
+
+# =============================
+# Next.js / Frontend App
+# =============================
+.next/
+out/
+*.next
+coverage/
+public/static/
+
+# Tailwind
+tailwind.config.js
+
+# VSCode (opcional)
+.vscode/
+
+# =============================
+# Docker / Volúmenes
+# =============================
+postgres-data/
+pgdata/
+phpmyadmin/
+*.sock
+
+# Docker env
+.env.docker
+
+# =============================
+# PhpMyAdmin / SQL BDD
+# =============================
+*.sql
+*.sqlite
+db.dump
+phpmyadmin/config.inc.php
+
+# =============================
+# OS-Specific / Misc
+# =============================
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
