@@ -1,0 +1,11 @@
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+export const withAuth = (Wrapped) => {
+  return (props) => {
+    const router = useRouter();
+    useEffect(() => {
+      if (!localStorage.getItem('token')) router.replace('/login');
+    }, []);
+    return <Wrapped {...props} />;
+  };
+};
