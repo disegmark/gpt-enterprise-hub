@@ -1,0 +1,10 @@
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  depends_on:
+    - db
+  environment:
+    PMA_HOST: db
+    PMA_USER: ${PHPADMIN_USER}
+    PMA_PASSWORD: ${PHPADMIN_PASS}
+  ports:
+    - "8080:80"
