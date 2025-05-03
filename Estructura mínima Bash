@@ -1,0 +1,15 @@
+backend-mcp/
+├── src/
+│   ├── controllers/
+│   │   ├── auth.js
+│   │   └── ordenes.js
+│   ├── middlewares/
+│   │   ├── auth.js
+│   │   └── errorHandler.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   └── ordenes.js
+│   └── app.js
+├── Dockerfile
+├── package.json
+└── .env.example
