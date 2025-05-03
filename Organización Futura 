@@ -1,0 +1,13 @@
+Consejo para organización futura
+
+Si el proyecto crece, puedes dividirlo en dos repositorios:
+
+Backend-MCP
+
+Frontend-App
+
+(opcionalmente n8n-flows como submódulo)
+
+
+
+Así luego puedes escalar horizontalmente, actualizar independiente el frontend y backend.
