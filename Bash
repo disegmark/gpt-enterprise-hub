@@ -1,0 +1,1 @@
+npm install express joi dotenv cors pg bcrypt jsonwebtoken winston
