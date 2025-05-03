@@ -1,0 +1,30 @@
+gpt-enterprise-hub/
+├── backend-mcp/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   └── app.js
+│   ├── Dockerfile
+│   ├── .env.example
+│   ├── package.json
+│   └── README.md
+├── frontend-app/
+│   ├── components/
+│   ├── contexts/
+│   ├── pages/
+│   ├── services/
+│   ├── .env.local.example
+│   └── README.md
+├── phpmyadmin-db/
+│   ├── users.sql
+│   └── README.md
+├── n8n-flows/
+│   └── mcp-flujo.json
+├── manuals/
+│   ├── manual-despliegue.pdf
+│   └── manual-whatsapp.pdf
+├── docker-compose.yml
+├── .gitignore
+├── README.md
+└── LICENSE
